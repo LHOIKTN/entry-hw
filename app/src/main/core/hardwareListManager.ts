@@ -80,6 +80,8 @@ export default class {
 
         return mergedList
             .filter(platformFilter)
+            // Beomeo classroom build: keep the custom micro:bit connection only.
+            .filter((config) => config.id === '220301')
             .sort(nameSortComparator);
     }
 

@@ -15,6 +15,12 @@
     "firmware": [
         {
             "type": "copy",
+            "name": "mircobit-beomeo",
+            "afterDelay": 7000,
+            "translate": "Microbit V2 범어중"
+        },
+        {
+            "type": "copy",
             "name": "microbit_compatible_lite",
             "afterDelay": 12000,
             "translate": "Microbit v1"

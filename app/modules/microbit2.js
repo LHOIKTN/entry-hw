@@ -22,7 +22,8 @@ class Microbit2 extends BaseModule {
             this.executeCheckList.push({ codeId, command });
         }
         // 명령어 프로세스 후에 queue에 넣기
-        const microbitCommand = `${command};${payload}`;
+        // The custom MicroPython firmware processes complete CRLF-terminated lines.
+        const microbitCommand = `${command};${payload}\r\n`;
         if (this.microbitCommands.indexOf(microbitCommand) > -1) {
             return;
         }
@@ -86,7 +87,7 @@ class Microbit2 extends BaseModule {
 
     // initial connection 체크
     requestInitialData() {
-        return 'localdata;';
+        return 'localdata;\r\n';
     }
 
     checkInitialData(data, config) {
@@ -100,12 +101,12 @@ class Microbit2 extends BaseModule {
         if (this.microbitCommands.length > 0) {
             const command = this.microbitCommands[0];
             if (this.currentCommand == command) {
-                return 'localdata;';
+                return 'localdata;\r\n';
             }
             this.currentCommand = command;
             return command;
         }
-        return 'localdata;';
+        return 'localdata;\r\n';
     }
 }
 
