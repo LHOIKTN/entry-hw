@@ -7,6 +7,7 @@ import BaseScanner from '../baseScanner';
 import SerialConnector from './connector';
 import createLogger from '../../electron/functions/createLogger';
 import Flasher from './flasher';
+import { buildMicrobitDevices, buildMacMicrobitDevices, readMicrobitSnapshot, microbitNotice } from './microbitDevices';
 
 const logger = createLogger('core/SerialScanner.ts');
 
@@ -53,6 +54,7 @@ class SerialScanner extends BaseScanner<SerialConnector> {
             return;
         }
 
+        const scanConfig = this.config;
         const serverMode = this.router.currentCloudMode;
         const selectedComPortName = this.router.selectedPort;
         const { hardware } = this.config;
@@ -71,11 +73,42 @@ class SerialScanner extends BaseScanner<SerialConnector> {
             serverMode === CloudModeTypes.cloud;
 
         // 전체 포트 가져오기
-        const comPorts = await SerialPort.list();
+        const isMicrobit = (process.platform === 'win32' || process.platform === 'darwin') && scanConfig.module === 'microbit2.js';
+        const comPorts = isMicrobit ? [] : await SerialPort.list();
         const selectedPorts = [];
 
         // 포트 선택을 유저에게서 직접 받아야 하는가?
-        if (isComPortSelected) {
+        if (isMicrobit) {
+            // Keep only the serial identity in router state, including reconnects.
+            // Re-resolve against a fresh PnP snapshot before opening any port.
+            try {
+                const snapshot = process.platform === 'win32' ? await readMicrobitSnapshot() : undefined;
+                const currentPorts = await SerialPort.list().catch((error) => {
+                    logger.warn(`microbit serial port enumeration failed: ${error.message}`);
+                    return [];
+                });
+                if (this.config !== scanConfig || !this.isScanning) {
+                    return;
+                }
+                const devices = snapshot ? buildMicrobitDevices(snapshot, currentPorts) : buildMacMicrobitDevices(currentPorts);
+                const selected = devices.find(device => device.path === this.router.selectedPort);
+                if (!selected || selected.connectionError || !selected.comPath) {
+                    this.router.sendEventToMainWindow('portListScanned', devices.length ? devices : [
+                        microbitNotice('microbit을 찾지 못했습니다. USB 연결과 장치 드라이버를 확인하세요.'),
+                    ]);
+                    return;
+                }
+                selectedPorts.push(selected.comPath);
+            } catch (error) {
+                if (this.config === scanConfig && this.isScanning) {
+                    logger.warn(`microbit PnP discovery failed: ${error.message}`);
+                    this.router.sendEventToMainWindow('portListScanned', [microbitNotice(
+                        '장치 조회에 실패했습니다. Windows PnpDevice 명령 지원 및 실행 권한을 관리자에게 확인하세요.',
+                    )]);
+                }
+                return;
+            }
+        } else if (isComPortSelected) {
             // 포트가 외부에서 선택되었는가?
             if (selectedComPortName) {
                 // lost 후 reconnect 임시 대응
@@ -134,7 +167,9 @@ class SerialScanner extends BaseScanner<SerialConnector> {
 
         if (electedConnector) {
             logger.info(`${electedConnector.port} is finally connected`);
-            rendererConsole.log(`${electedConnector.port} is finally connected`);
+            rendererConsole.log((process.platform === 'win32' || process.platform === 'darwin') && scanConfig.module === 'microbit2.js'
+                ? 'microbit is finally connected'
+                : `${electedConnector.port} is finally connected`);
             this.stopScan();
             return electedConnector.connector;
         }

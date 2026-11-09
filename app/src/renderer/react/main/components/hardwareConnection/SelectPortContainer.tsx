@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Styled from 'styled-components';
 import { IStoreState } from '../../store';
 import { useDispatch, useSelector } from 'react-redux';
@@ -23,7 +23,7 @@ const PortBoxBody = Styled.div`
     justify-content: space-between;
     align-items: center;
     width: 360px;
-    height: 379px;
+    min-height: 379px;
     flex-direction: column;
     button {
         cursor: pointer;
@@ -111,14 +111,26 @@ const SelectPortContainer: React.FC<IProps> = (props) => {
     const dispatch = useDispatch();
     const [selectedPort, changeSelected] = useState<string>('');
 
+    const isMicrobit = portList.some(port => port.path.indexOf('microbit:') === 0);
+    const selectionPrompt = isMicrobit ? '연결할 microbit을 선택하세요.' : translator.translate('Select the COM PORT to connect');
+    const selectedDevice = portList.find(port => port.path === selectedPort);
+    useEffect(() => {
+        if (selectedPort && !portList.some(port => port.path === selectedPort)) {
+            changeSelected('');
+        }
+    }, [portList, selectedPort]);
+
     const onCancelClicked = useCallback(() => {
         props.handleCancelClicked();
         changePortList(dispatch)([]);
     }, []);
 
-    const onPortSelected = useCallback((porName: string) => {
-        selectPort(dispatch)(porName);
-    }, []);
+    const onPortSelected = (portName: string) => {
+        const device = portList.find(port => port.path === portName);
+        if (device && !device.connectionError) {
+            selectPort(dispatch)(portName);
+        }
+    };
 
     return (
         <PortBoxContainer id="select_port_box">
@@ -134,22 +146,27 @@ const SelectPortContainer: React.FC<IProps> = (props) => {
                 </PortBoxTitle>
                 <PortBoxContent>
                     <PortBoxDescription>
-                        {translator.translate('Select the COM PORT to connect')}
+                        {selectionPrompt}
                     </PortBoxDescription>
-                    <PortBoxSelectElement size={10} id="select_port" onChange={(e) => {
+                    <PortBoxSelectElement value={selectedPort} size={10} id="select_port" onChange={(e) => {
                         changeSelected(e.target.value);
                     }}>
                         {portList.map((port, index) => (
                             <option
-                                title={port.path} value={port.path} key={`${port.path}-${index}`}
+                                title={port.serialNumber || port.displayName || port.path} value={port.path} key={`${port.path}-${index}`}
                                 onDoubleClick={() => {
                                     onPortSelected(port.path);
                                 }}
                             >
-                                {port.path}
+                                {port.displayName || port.path}
                             </option>
                         ))}
                     </PortBoxSelectElement>
+                    {isMicrobit && (
+                        <p role="status" style={{ margin: '0 20px 16px', fontSize: 14 }}>
+                            {selectedDevice ? selectedDevice.connectionError : '장치 목록은 자동으로 갱신됩니다. 항목을 선택하면 연결 가능 여부를 확인할 수 있습니다.'}
+                        </p>
+                    )}
                     <div>
                         <CancelButton
                             id="btn_select_port_cancel"
@@ -158,9 +175,9 @@ const SelectPortContainer: React.FC<IProps> = (props) => {
                         >
                             {translator.translate('Cancel')}
                         </CancelButton>
-                        <SelectButton id="btn_select_port" onClick={() => {
+                        <SelectButton disabled={isMicrobit && (!selectedDevice || !!selectedDevice.connectionError)} id="btn_select_port" onClick={() => {
                             if (!selectedPort) {
-                                alert(translator.translate('Select the COM PORT to connect'));
+                                alert(selectionPrompt);
                             } else {
                                 onPortSelected(selectedPort);
                             }
