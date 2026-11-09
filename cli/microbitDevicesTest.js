@@ -60,7 +60,7 @@ async function scanTest(selection, platform = 'win32', moduleName = 'microbit2.j
     const events = [];
     const Scanner = load('app/src/main/core/serial/scanner.ts', {
         '../rendererConsole': { log() {} },
-        serialport: { list: async () => ports },
+        serialport: { list: async () => { if (fail) { throw new Error('COM enumeration failed'); } return ports; } },
         './electPortFunction': async candidates => { opened.push(...candidates); },
         '../../../common/constants': { CloudModeTypes: { cloud: 'cloud' } },
         '../baseScanner': class { constructor(router) { this.router = router; } },
@@ -79,21 +79,36 @@ async function scanTest(selection, platform = 'win32', moduleName = 'microbit2.j
     return { opened, events };
 }
 (async () => {
-    assert.deepStrictEqual((await scanTest(`microbit:${a}`)).opened, ['COM22']);
-    for (const selection of [undefined, `microbit:${b}`, 'COM22', 'microbit:missing']) {
+    assert.deepStrictEqual((await scanTest(`microbit:${a}`)).opened, []);
+    assert.deepStrictEqual((await scanTest('COM22')).opened, ['COM22']);
+    assert.deepStrictEqual((await scanTest('COM22', 'win32', 'microbit2.js', true)).opened, []);
+    assert.deepStrictEqual((await scanTest('COM99')).opened, []);
+    for (const selection of [undefined, `microbit:${b}`, 'microbit:missing']) {
         const scan = await scanTest(selection);
         assert.deepStrictEqual(scan.opened, []);
-        assert.strictEqual(scan.events[0][1].length, 2);
+        assert.strictEqual(scan.events[0][1].length, 1);
+        assert.strictEqual(scan.events[0][1][0].path, 'COM22');
     }
     const failure = await scanTest(`microbit:${a}`, 'win32', 'microbit2.js', true);
     assert.deepStrictEqual(failure.opened, []);
     assert.ok(failure.events[0][1][0].connectionError);
+    assert.ok(failure.events[0][1][0].displayName.includes('COM enumeration failed'));
     assert.deepStrictEqual((await scanTest('COM22', 'darwin')).opened, []);
     assert.deepStrictEqual((await scanTest('COM22', 'win32', 'other.js')).opened, ['COM22']);
     console.log('PASS: microbit identity, labels, mapping, fail-closed scanner and legacy paths');
 })().catch(error => { console.error(error); process.exitCode = 1; });
 
 const macSerial = '990636020005282083A474A7828EF1B5000000006E052820';
+const winPort = { path: 'COM22', vendorId: '0d28', productId: '0204', serialNumber: a.toLowerCase() };
+const winDevices = devices.buildWindowsMicrobitPorts([winPort, { path: 'COM23' }]);
+assert.strictEqual(winDevices[0].path, 'COM22');
+assert.strictEqual(winDevices[0].displayName, 'microbit (953428F0)');
+assert.strictEqual(winDevices[1].displayName, 'COM23');
+assert.ok(!winDevices[1].connectionError);
+assert.strictEqual(devices.buildWindowsMicrobitPorts([{ path: 'COM24', pnpId: usb(a) }])[0].displayName, 'microbit (953428F0)');
+assert.strictEqual(devices.buildWindowsMicrobitPorts([{ ...winPort, serialNumber: '7&123&0' }])[0].displayName, 'COM22');
+assert.notStrictEqual(devices.buildWindowsMicrobitPorts([winPort, { ...winPort, path: 'COM25', serialNumber: collision }])[0].displayName,
+    devices.buildWindowsMicrobitPorts([winPort, { ...winPort, path: 'COM25', serialNumber: collision }])[1].displayName);
 const macPort = { path: '/dev/tty.usbmodem11402', vendorId: '0d28', productId: '0204', serialNumber: macSerial.toLowerCase() };
 const macDevices = devices.buildMacMicrobitDevices([macPort, { path: '/dev/tty.other' }]);
 assert.strictEqual(macDevices.length, 1);

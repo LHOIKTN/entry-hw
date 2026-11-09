@@ -7,7 +7,7 @@ import BaseScanner from '../baseScanner';
 import SerialConnector from './connector';
 import createLogger from '../../electron/functions/createLogger';
 import Flasher from './flasher';
-import { buildMicrobitDevices, buildMacMicrobitDevices, readMicrobitSnapshot, microbitNotice } from './microbitDevices';
+import { buildWindowsMicrobitPorts, buildMacMicrobitDevices, microbitNotice } from './microbitDevices';
 
 const logger = createLogger('core/SerialScanner.ts');
 
@@ -78,11 +78,35 @@ class SerialScanner extends BaseScanner<SerialConnector> {
         const selectedPorts = [];
 
         // 포트 선택을 유저에게서 직접 받아야 하는가?
-        if (isMicrobit) {
+        if (isMicrobit && process.platform === 'win32') {
+            const started = Date.now();
+            try {
+                // The serial and COM path belong to the same enumeration record.
+                // Change only the label; connect through the original COM path.
+                const currentPorts = await SerialPort.list();
+                if (this.config !== scanConfig || !this.isScanning) { return; }
+                const devices = buildWindowsMicrobitPorts(currentPorts);
+                logger.info(`microbit COM discovery: elapsed=${Date.now() - started}ms; ports=${JSON.stringify(currentPorts)}`);
+                if (!devices.some(device => device.path === selectedComPortName)) {
+                    this.router.sendEventToMainWindow('portListScanned', devices.length ? devices : [
+                        microbitNotice('연결된 COM 포트가 없습니다. USB 연결과 드라이버를 확인하세요.'),
+                    ]);
+                    return;
+                }
+                selectedPorts.push(selectedComPortName);
+            } catch (error) {
+                logger.warn(`microbit COM discovery failed: elapsed=${Date.now() - started}ms; code=${error.code}; error=${error.stack || error.message}`);
+                if (this.config === scanConfig && this.isScanning) {
+                    this.router.sendEventToMainWindow('portListScanned', [microbitNotice(
+                        `COM 장치 조회 실패: ${error.message}. 상세 원인은 장치 로그를 확인하세요.`,
+                    )]);
+                }
+                return;
+            }
+        } else if (isMicrobit) {
             // Keep only the serial identity in router state, including reconnects.
             // Re-resolve against a fresh PnP snapshot before opening any port.
             try {
-                const snapshot = process.platform === 'win32' ? await readMicrobitSnapshot() : undefined;
                 const currentPorts = await SerialPort.list().catch((error) => {
                     logger.warn(`microbit serial port enumeration failed: ${error.message}`);
                     return [];
@@ -90,7 +114,7 @@ class SerialScanner extends BaseScanner<SerialConnector> {
                 if (this.config !== scanConfig || !this.isScanning) {
                     return;
                 }
-                const devices = snapshot ? buildMicrobitDevices(snapshot, currentPorts) : buildMacMicrobitDevices(currentPorts);
+                const devices = buildMacMicrobitDevices(currentPorts);
                 const selected = devices.find(device => device.path === this.router.selectedPort);
                 if (!selected || selected.connectionError || !selected.comPath) {
                     this.router.sendEventToMainWindow('portListScanned', devices.length ? devices : [
@@ -101,9 +125,9 @@ class SerialScanner extends BaseScanner<SerialConnector> {
                 selectedPorts.push(selected.comPath);
             } catch (error) {
                 if (this.config === scanConfig && this.isScanning) {
-                    logger.warn(`microbit PnP discovery failed: ${error.message}`);
+                    logger.warn(`microbit serial discovery failed: ${error.stack || error.message}`);
                     this.router.sendEventToMainWindow('portListScanned', [microbitNotice(
-                        '장치 조회에 실패했습니다. Windows PnpDevice 명령 지원 및 실행 권한을 관리자에게 확인하세요.',
+                        `장치 조회 실패: ${error.message}. 상세 원인은 장치 로그를 확인하세요.`,
                     )]);
                 }
                 return;

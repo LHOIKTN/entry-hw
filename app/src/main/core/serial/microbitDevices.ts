@@ -114,6 +114,29 @@ export function microbitNotice(message: string): ISerialPortScanData {
     return { path: 'microbit:notice', displayName: message, connectionError: message };
 }
 
+// Windows: retain the COM path and use only identity data from that same record.
+// Missing serials remain usable through the original COM label.
+export function buildWindowsMicrobitPorts(ports: ISerialPortScanData[]): ISerialPortScanData[] {
+    const serialFor = (port: ISerialPortScanData) => {
+        const isMicrobit = ((port.vendorId || '').toUpperCase() === '0D28' &&
+            (port.productId || '').toUpperCase() === '0204') ||
+            /VID_0D28&PID_0204/i.test(port.pnpId || '');
+        if (!isMicrobit) { return undefined; }
+        const serial = (port.serialNumber || '').trim();
+        return /^[0-9A-F]{8,128}$/i.test(serial) ? serial.toUpperCase() : serialFromInstance(port.pnpId || '');
+    };
+    const short = (serial: string) => serial.length === 48 ? serial.substr(24, 8) : serial.slice(-8);
+    const serials = ports.map(serialFor);
+    return ports.map((port, index) => {
+        const serial = serials[index];
+        const collision = serial && serials.filter(value => value && short(value) === short(serial)).length > 1;
+        return {
+            ...port,
+            displayName: serial ? `microbit (${collision ? serial : short(serial)})${collision ? ` [${port.path}]` : ''}` : port.path,
+        };
+    });
+}
+
 // macOS serialport supplies the USB serial on the same record as its device path.
 export function buildMacMicrobitDevices(ports: ISerialPortScanData[]): MicrobitDevice[] {
     const candidates = ports.filter(port =>
