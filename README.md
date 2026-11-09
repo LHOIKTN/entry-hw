@@ -56,3 +56,16 @@ npm install --global node-gyp
 ## Copyright and License
 
 [The MIT License (MIT)](https://github.com/entrylabs/entry-hw/blob/master/LICENSE)
+
+## Windows micro:bit 연결 변경 (2026-11-09)
+
+- Windows에서는 `SerialPort.list()`의 COM 항목에 포함된 시리얼번호로 표시 이름만 `microbit (축약번호)`로 바꿉니다. 실제 연결 경로는 원래 `COMxx` 그대로 사용합니다.
+- 48자리 시리얼번호는 기존 규칙에 따라 가운데 8자리를 표시하며, 축약번호가 중복되면 전체 번호와 COM 경로를 표시합니다.
+- 시리얼번호가 없거나 완전한 장치 번호로 확인되지 않으면 `COMxx`를 그대로 표시하고 기존 연결 절차를 사용합니다.
+- Windows 연결 과정에서 PowerShell/PnpDevice 및 COM 부모 관계 조회를 사용하지 않습니다. 기존 PnP 유틸리티는 연결 경로에서 호출하지 않습니다.
+- 진단 로그는 `%APPDATA%\entry-hw\logs\entry-hw-YYYY-MM-DD.log`에 기록합니다. `microbit COM discovery`로 COM 원본 목록과 조회 시간, 오류 코드 및 스택을 확인할 수 있습니다.
+- macOS 시리얼 선택 방식은 유지합니다. Windows의 COM 기반 선택에서는 재연결 시에도 해당 COM 경로를 사용합니다.
+
+검증 명령: `node cli/microbitDevicesTest.js` (통과). 축약 표시, 시리얼 없는 COM 표시, 중복 이름 구분, 기존 COM 연결, 사라진 COM 연결 방지 및 조회 실패 처리를 검사합니다. 실제 USB 통신은 재설치 후 확인해야 합니다.
+
+Entry Offline 설치 파일에는 이 저장소의 router/preload/선택 UI 빌드 결과를 함께 동기화해야 합니다. 상위 작업 폴더의 `entry-offline/BEOMEO.md`와 `entry-offline/WINDOWS-HANDOFF.ko.md`를 참조하세요.

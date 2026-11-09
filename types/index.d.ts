@@ -134,6 +134,8 @@ declare interface IHardwareConfig {
 }
 
 declare interface ISerialPortScanData {
+    displayName?: string;
+    connectionError?: string;
     path: string;
     manufacturer?: string;
     serialNumber?: string;
