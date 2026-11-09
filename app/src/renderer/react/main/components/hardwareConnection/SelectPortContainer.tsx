@@ -111,7 +111,8 @@ const SelectPortContainer: React.FC<IProps> = (props) => {
     const dispatch = useDispatch();
     const [selectedPort, changeSelected] = useState<string>('');
 
-    const isMicrobit = portList.some(port => port.path.indexOf('microbit:') === 0);
+    const isMicrobit = portList.some(port => port.path.indexOf('microbit:') === 0 ||
+        (port.displayName || '').indexOf('microbit (') === 0);
     const selectionPrompt = isMicrobit ? '연결할 microbit을 선택하세요.' : translator.translate('Select the COM PORT to connect');
     const selectedDevice = portList.find(port => port.path === selectedPort);
     useEffect(() => {

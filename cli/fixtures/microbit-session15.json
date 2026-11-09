@@ -1,0 +1,81 @@
+{
+  "description": "Student session 15: COM74 virtual composite parent shares ContainerID with TS_USB E5DC3934; unrelated PCI/host inventory omitted.",
+  "ports": [
+    {
+      "path": "COM55",
+      "manufacturer": "mbed",
+      "serialNumber": "9906360200052820E204F5EAB5E79A42000000006E052820",
+      "pnpId": "USB\\VID_0D28&PID_0204&MI_01\\9906360200052820E204F5EAB5E79A42000000006E052820",
+      "locationId": "mbed Serial Port",
+      "vendorId": "0D28",
+      "productId": "0204"
+    },
+    {
+      "path": "COM74",
+      "manufacturer": "mbed",
+      "serialNumber": "4&333B441C&0&SESSION15-3735928579&7&4E95264B-3A72-4237-B66C-F326FD60D739",
+      "pnpId": "USB\\VID_0D28&PID_0204&MI_01\\4&333B441C&0&SESSION15-3735928579&7&4E95264B-3A72-4237-B66C-F326FD60D739",
+      "locationId": "mbed Serial Port",
+      "vendorId": "0D28",
+      "productId": "0204"
+    }
+  ],
+  "nodes": [
+    {
+      "instanceId": "TS_USB\\VID_0D28&PID_0204\\TS_9906360200052820D87671F8B6284873000000006E052820",
+      "containerId": "120122c1-cea7-524a-8f54-2db20685bb1f",
+      "parentId": "USB\\VID_0424&PID_2517\\9&1D4D6053&0&4",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": false
+    },
+    {
+      "instanceId": "USB\\VID_0D28&PID_0204\\9906360200052820E204F5EAB5E79A42000000006E052820",
+      "containerId": "dd00566a-c950-5fe4-8c6a-1375764e5f9d",
+      "parentId": "USB\\VID_0424&PID_2514\\8&39E189E8&A&1",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": false
+    },
+    {
+      "instanceId": "USB\\VID_0D28&PID_0204&REV_1000\\3&2DCEE32&C&SESSION15-3735928579&7&4E95264B-3A72-4237-B66C-F326FD60D739",
+      "containerId": "c24bf16d-82d0-5ae2-83d4-d90aac06cbd9",
+      "parentId": "TS_USB_HUB_ENUMERATOR\\UMB\\2&30D3618&0&TS_USB_HUB",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": false
+    },
+    {
+      "instanceId": "TS_USB_HUB_ENUMERATOR\\UMB\\2&30D3618&0&TS_USB_HUB",
+      "containerId": "00000000-0000-0000-ffff-ffffffffffff",
+      "parentId": "UMB\\UMB\\1&841921D&0&TS_USB_HUB_ENUMERATOR",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": false
+    },
+    {
+      "instanceId": "USB\\VID_0D28&PID_0204&MI_01\\4&333B441C&0&SESSION15-3735928579&7&4E95264B-3A72-4237-B66C-F326FD60D739",
+      "containerId": "a01468d9-dc07-11f1-884b-c87f54683ed6",
+      "parentId": "USB\\VID_0D28&PID_0204&REV_1000\\3&2DCEE32&C&SESSION15-3735928579&7&4E95264B-3A72-4237-B66C-F326FD60D739",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": true
+    },
+    {
+      "instanceId": "TS_USB\\VID_0D28&PID_0204\\TS_990636020005282045F0227BE5DC3934000000006E052820",
+      "containerId": "c24bf16d-82d0-5ae2-83d4-d90aac06cbd9",
+      "parentId": "USB\\VID_0424&PID_2517\\9&1ADFB19C&0&4",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": false
+    },
+    {
+      "instanceId": "USB\\VID_0D28&PID_0204&MI_01\\9906360200052820E204F5EAB5E79A42000000006E052820",
+      "containerId": "c2d1d53b-dbf6-11f1-884b-c87f54683ed6",
+      "parentId": "USB\\VID_0D28&PID_0204\\9906360200052820E204F5EAB5E79A42000000006E052820",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": true
+    }
+  ]
+}

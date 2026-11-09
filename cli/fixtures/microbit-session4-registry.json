@@ -1,0 +1,89 @@
+{
+  "description": "Captured session 4: original serial-bearing devnode absent; USB and TS_USB registry ContainerID matches confirmed by the user.",
+  "ports": [
+    {
+      "path": "COM1",
+      "manufacturer": "(ǥ�� ��Ʈ ����)",
+      "pnpId": "ACPI\\PNP0501\\0"
+    },
+    {
+      "path": "COM37",
+      "manufacturer": "mbed",
+      "serialNumber": "4&1E7D5866&0&SESSION4-3735928575&2&C5A216B4-D864-485B-9C85-02E07C0D1802",
+      "pnpId": "USB\\VID_0D28&PID_0204&MI_01\\4&1E7D5866&0&SESSION4-3735928575&2&C5A216B4-D864-485B-9C85-02E07C0D1802",
+      "locationId": "mbed Serial Port",
+      "vendorId": "0D28",
+      "productId": "0204"
+    }
+  ],
+  "nodes": [
+    {
+      "instanceId": "USB\\VID_0D28&PID_0204&REV_1000\\3&2DCEE32&E&SESSION4-3735928575&2&C5A216B4-D864-485B-9C85-02E07C0D1802",
+      "containerId": "2b6b0b74-e0ee-5b52-b138-a5134ad37335",
+      "parentId": "TS_USB_HUB_ENUMERATOR\\UMB\\2&30D3618&0&TS_USB_HUB",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": false
+    },
+    {
+      "instanceId": "TS_USB_HUB_ENUMERATOR\\UMB\\2&30D3618&0&TS_USB_HUB",
+      "containerId": "00000000-0000-0000-ffff-ffffffffffff",
+      "parentId": "UMB\\UMB\\1&841921D&0&TS_USB_HUB_ENUMERATOR",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": false
+    },
+    {
+      "instanceId": "UMB\\UMB\\1&841921D&0&TS_USB_HUB_ENUMERATOR",
+      "containerId": "00000000-0000-0000-ffff-ffffffffffff",
+      "parentId": "ROOT\\UMBUS\\0000",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": false
+    },
+    {
+      "instanceId": "ROOT\\UMBUS\\0000",
+      "containerId": "00000000-0000-0000-ffff-ffffffffffff",
+      "parentId": "HTREE\\ROOT\\0",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": false
+    },
+    {
+      "instanceId": "HTREE\\ROOT\\0",
+      "containerId": "00000000-0000-0000-ffff-ffffffffffff",
+      "parentId": null,
+      "containerError": 0,
+      "parentError": 13,
+      "isPort": false
+    },
+    {
+      "instanceId": "ACPI\\PNP0501\\0",
+      "containerId": "00000000-0000-0000-ffff-ffffffffffff",
+      "parentId": "PCI\\VEN_1022&DEV_790E&SUBSYS_87C01043&REV_51\\3&11583659&0&A3",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": true
+    },
+    {
+      "instanceId": "USB\\VID_0D28&PID_0204&MI_01\\4&1E7D5866&0&SESSION4-3735928575&2&C5A216B4-D864-485B-9C85-02E07C0D1802",
+      "containerId": "31899cd6-dc0e-11f1-8859-c87f546842f4",
+      "parentId": "USB\\VID_0D28&PID_0204&REV_1000\\3&2DCEE32&E&SESSION4-3735928575&2&C5A216B4-D864-485B-9C85-02E07C0D1802",
+      "containerError": 0,
+      "parentError": 0,
+      "isPort": true
+    }
+  ],
+  "registryIdentities": [
+    {
+      "instanceId": "USB\\VID_0D28&PID_0204\\990636020005282083a474a7828ef1b5000000006e052820",
+      "containerId": "2b6b0b74-e0ee-5b52-b138-a5134ad37335",
+      "source": "registry"
+    },
+    {
+      "instanceId": "TS_USB\\VID_0D28&PID_0204\\TS_990636020005282083a474a7828ef1b5000000006e052820",
+      "containerId": "2b6b0b74-e0ee-5b52-b138-a5134ad37335",
+      "source": "registry"
+    }
+  ]
+}

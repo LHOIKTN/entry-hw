@@ -8,6 +8,7 @@ import SerialConnector from './connector';
 import createLogger from '../../electron/functions/createLogger';
 import Flasher from './flasher';
 import { buildWindowsMicrobitPorts, buildMacMicrobitDevices, microbitNotice } from './microbitDevices';
+import { readWindowsMicrobitIdentity } from './windowsMicrobitIdentity';
 
 const logger = createLogger('core/SerialScanner.ts');
 
@@ -83,10 +84,19 @@ class SerialScanner extends BaseScanner<SerialConnector> {
             try {
                 // The serial and COM path belong to the same enumeration record.
                 // Change only the label; connect through the original COM path.
+                const rawPorts = await SerialPort.list();
+                const identityStarted = Date.now();
+                const snapshot = await readWindowsMicrobitIdentity().catch(error => {
+                    logger.warn(`microbit COM identity failed: elapsed=${Date.now() - identityStarted}ms; code=${error.code}; killed=${error.killed}; signal=${error.signal}; executable=${error.executable}; stderr=${error.stderr}; error=${error.stack || error.message}`);
+                    return undefined;
+                });
+                // Refresh after the native query so an unplugged COM from the
+                // earlier enumeration cannot reach the connection code.
                 const currentPorts = await SerialPort.list();
                 if (this.config !== scanConfig || !this.isScanning) { return; }
-                const devices = buildWindowsMicrobitPorts(currentPorts);
-                logger.info(`microbit COM discovery: elapsed=${Date.now() - started}ms; ports=${JSON.stringify(currentPorts)}`);
+                const devices = buildWindowsMicrobitPorts(currentPorts, snapshot ? snapshot.nodes : [],
+                    snapshot && snapshot.registryIdentities ? snapshot.registryIdentities : []);
+                logger.info(`microbit COM discovery: elapsed=${Date.now() - started}ms; ports=${JSON.stringify(rawPorts)}; currentPorts=${JSON.stringify(currentPorts)}; identity=${JSON.stringify(snapshot)}; resolved=${JSON.stringify(devices)}`);
                 if (!devices.some(device => device.path === selectedComPortName)) {
                     this.router.sendEventToMainWindow('portListScanned', devices.length ? devices : [
                         microbitNotice('연결된 COM 포트가 없습니다. USB 연결과 드라이버를 확인하세요.'),
@@ -105,7 +115,7 @@ class SerialScanner extends BaseScanner<SerialConnector> {
             }
         } else if (isMicrobit) {
             // Keep only the serial identity in router state, including reconnects.
-            // Re-resolve against a fresh PnP snapshot before opening any port.
+            // Re-resolve against fresh serialport records before opening any port.
             try {
                 const currentPorts = await SerialPort.list().catch((error) => {
                     logger.warn(`microbit serial port enumeration failed: ${error.message}`);

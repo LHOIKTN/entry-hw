@@ -18,3 +18,5 @@ build/*.zip
 *.map
 
 /dist-mac-local/
+/app/native/*.exe
+/app/native/*.exe.config
